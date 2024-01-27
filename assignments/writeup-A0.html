@@ -1,6 +1,6 @@
 **Assignment 0 Report**
 
-AndrewID: XXXX
+AndrewID: zhengren
 
 (##) About this template
 
@@ -16,9 +16,12 @@ Step 1: Clone
 <div class="twentytwenty-container">
     <img src="A0-writeup/reference/step1-github-ref-1.png" alt="Github-CLI">
 </div>
+<div class="twentytwenty-container">
+    <img src="A0-writeup/reference/step1-github-ref-2.png" alt="Github-CLI">
+</div>
 or
 <div class="twentytwenty-container">
-    <img src="A0-writeup/reference/step1-github-ref-2.png" alt="Github-Web">
+    <img src="A0-writeup/reference/step1-github-ref-3.png" alt="Github-Web">
 </div>
 
 Step 2: General Setup
@@ -54,13 +57,23 @@ For each of the problems you solved in task 2, characterise the bug in your own 
 type of bug.
 
 Problem 1:
+The compiler bug is due to 2 mistakes:
+1. There is a semicolon missing at the end of printf line;
+2. We don't use namespace std, there should be std:: before cout.
+The reason why such errors occur may because carelessness when fast typng.
 
 Problem 2:
+The result of the operation between int and int is also a round down int.
+When the result is greater than a third but less than two third, it is equal to or less than a third of y, which will lead to miscount.
+We can fix the problem by changing one or more x, y, helper's type to float.
 
 Problem 3:
+This problem is mainly due to the misunderstanding of the function and the pointer.
+When we call vector.end(), it returns a iterator that refers to the next position of the last elemnt.
+So we should either change the reference to *(vector.end()-1) or use vector.back()
 
 Problem 4:
-
+To judge the equality of 3 variables cannot use two equal signs, instead use the "&&" operation to connect two judgement expressions.
 
 (##) A0T3
 
