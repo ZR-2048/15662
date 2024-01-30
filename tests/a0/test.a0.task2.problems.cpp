@@ -1,5 +1,5 @@
 
-#include "..\..\src\test.h"
+#include "test.h"
 
 #include <iostream>
 #include <numeric>
