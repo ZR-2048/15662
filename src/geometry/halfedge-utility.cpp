@@ -853,12 +853,13 @@ Halfedge_Mesh Halfedge_Mesh::from_indexed_mesh(Indexed_Mesh const &indexed_mesh)
 
 	//extract vertex positions and face indices from indexed_mesh:
 	std::vector< Vec3 > indexed_vertices;
-	indexed_vertices.reserve(indexed_mesh.vertices().size());
+    indexed_vertices.reserve(indexed_mesh.vertices().size());
 	for (auto const &v : indexed_mesh.vertices()) {
-		indexed_vertices.emplace_back(v.pos);
+//        std::cout << v.pos << std::endl;
+		indexed_vertices.emplace_back(v.pos);  // original method: emplace_back
 	}
 
-	std::vector< std::vector< Index > > indexed_faces;
+    std::vector< std::vector< Index > > indexed_faces;
 	assert(indexed_mesh.indices().size() % 3 == 0);
 	indexed_faces.reserve(indexed_mesh.indices().size() / 3);
 	for (uint32_t i = 0; i < indexed_mesh.indices().size(); i += 3) {
