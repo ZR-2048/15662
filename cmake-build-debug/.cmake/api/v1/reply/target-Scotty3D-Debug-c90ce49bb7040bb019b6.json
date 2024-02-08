@@ -13,7 +13,8 @@
 	{
 		"commands" : 
 		[
-			"add_executable"
+			"add_executable",
+			"include_directories"
 		],
 		"files" : 
 		[
@@ -26,6 +27,12 @@
 			},
 			{
 				"command" : 0,
+				"file" : 0,
+				"line" : 8,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
 				"file" : 0,
 				"line" : 6,
 				"parent" : 0
@@ -41,6 +48,25 @@
 					"fragment" : "-g -fdiagnostics-color=always"
 				}
 			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 2,
+					"path" : "D:/CMU/2024"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Spring/15662"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Computer"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Graphic/Scotty3D/src"
+				}
+			],
 			"language" : "CXX",
 			"languageStandard" : 
 			{
@@ -52,7 +78,9 @@
 			},
 			"sourceIndexes" : 
 			[
-				0
+				0,
+				1,
+				2
 			]
 		}
 	],
@@ -89,7 +117,9 @@
 			"name" : "Source Files",
 			"sourceIndexes" : 
 			[
-				0
+				0,
+				1,
+				2
 			]
 		}
 	],
@@ -99,6 +129,18 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
 			"path" : "tests/a0/test.a0.task2.problems.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/scene/transform.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "tests/a1/test.a1.task1.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

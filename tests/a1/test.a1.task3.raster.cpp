@@ -312,4 +312,42 @@ Test test_a1_task3_raster_thin_2px("a1.task3.raster.thin.2px", []() {
 	);
 });
 
+Test test_a1_task3_raster_right_edge("a1.task3.raster.right_edge", []() {
+    check_rasterize_triangles(
+            "triangle with right edge covering (1.5,1.5)",
+            { FPClippedVertex{ Vec3{ 1.3f, 1.3f, 0.5f }, 1.0f, { 1.0f } },
+              FPClippedVertex{ Vec3{ 1.7f, 1.7f, 0.5f }, 2.0f, { 2.0f } },
+              FPClippedVertex{ Vec3{ 1.3f, 1.7f, 0.5f }, 3.0f, { 3.0f } } },
+            { }
+    );
+});
 
+Test test_a1_task3_raster_left_edge("a1.task3.raster.left_edge", []() {
+    check_rasterize_triangles(
+            "triangle with left edge covering (1.5,1.5)",
+            {FPClippedVertex{Vec3{1.3f, 1.3f, 0.5f}, 1.0f, {1.0f}},
+             FPClippedVertex{Vec3{1.7f, 1.7f, 0.5f}, 2.0f, {2.0f}},
+             FPClippedVertex{Vec3{1.9f, 1.3f, 0.5f}, 3.0f, {3.0f}}},
+            {FPFragment{Vec3{1.5f, 1.5f, 0.5f}, {1.0f}, {Vec2{0.0f}}}}
+    );
+});
+
+Test test_a1_task3_raster_top_edge("a1.task3.raster.top_edge", []() {
+    check_rasterize_triangles(
+            "triangle with top edge covering (1.5,1.5)",
+            {FPClippedVertex{Vec3{1.2f, 1.5f, 0.5f}, 1.0f, {1.0f}},
+             FPClippedVertex{Vec3{1.7f, 1.5f, 0.5f}, 2.0f, {2.0f}},
+             FPClippedVertex{Vec3{1.5f, 1.2f, 0.5f}, 3.0f, {3.0f}}},
+            {FPFragment{Vec3{1.5f, 1.5f, 0.5f}, {1.0f}, {Vec2{0.0f}}}}
+    );
+});
+
+Test test_a1_task3_raster_bottom_edge("a1.task3.raster.bottom_edge", []() {
+    check_rasterize_triangles(
+            "triangle with non-top horizontal edge covering (1.5,1.5)",
+            {FPClippedVertex{Vec3{1.2f, 1.5f, 0.5f}, 1.0f, {1.0f}},
+             FPClippedVertex{Vec3{1.7f, 1.5f, 0.5f}, 2.0f, {2.0f}},
+             FPClippedVertex{Vec3{1.5f, 1.7f, 0.5f}, 3.0f, {3.0f}}},
+            {}
+    );
+});

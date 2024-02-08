@@ -2,6 +2,7 @@
 #include "pipeline.h"
 
 #include <iostream>
+#include <algorithm>
 
 #include "../lib/log.h"
 #include "../lib/mathlib.h"
@@ -142,6 +143,12 @@ void Pipeline<primitive_type, Program, flags>::run(std::vector<Vertex> const& ve
 			// "Less" means the depth test passes when the new fragment has depth less than the stored depth.
 			// A1T4: Depth_Less
 			// TODO: implement depth test! We want to only emit fragments that have a depth less than the stored depth, hence "Depth_Less".
+            if (f.fb_position.z < fb_depth){
+                fb_depth = f.fb_position.z;
+            }
+            else{
+                continue;
+            }
 		} else {
 			static_assert((flags & PipelineMask_Depth) <= Pipeline_Depth_Always, "Unknown depth test flag.");
 		}
@@ -164,12 +171,12 @@ void Pipeline<primitive_type, Program, flags>::run(std::vector<Vertex> const& ve
 			} else if constexpr ((flags & PipelineMask_Blend) == Pipeline_Blend_Add) {
 				// A1T4: Blend_Add
 				// TODO: framebuffer color should have fragment color multiplied by fragment opacity added to it.
-				fb_color = sf.color; //<-- replace this line
+				fb_color += sf.color*sf.opacity; //<-- replace this line
 			} else if constexpr ((flags & PipelineMask_Blend) == Pipeline_Blend_Over) {
 				// A1T4: Blend_Over
 				// TODO: set framebuffer color to the result of "over" blending (also called "alpha blending") the fragment color over the framebuffer color, using the fragment's opacity
 				// 		 You may assume that the framebuffer color has its alpha premultiplied already, and you just want to compute the resulting composite color
-				fb_color = sf.color; //<-- replace this line
+				fb_color = sf.color + fb_color * (1 - sf.opacity); //<-- replace this line
 			} else {
 				static_assert((flags & PipelineMask_Blend) <= Pipeline_Blend_Over, "Unknown blending flag.");
 			}
@@ -361,16 +368,141 @@ void Pipeline<p, P, flags>::rasterize_line(
 	// this function!
 	// The OpenGL specification section 3.5 may also come in handy.
 
-	{ // As a placeholder, draw a point in the middle of the line:
-		//(remove this code once you have a real implementation)
-		Fragment mid;
-		mid.fb_position = (va.fb_position + vb.fb_position) / 2.0f;
-		mid.attributes = va.attributes;
-		mid.derivatives.fill(Vec2(0.0f, 0.0f));
-		emit_fragment(mid);
-	}
+	{
+        // check which point is lower andw which axis is the main axis
+        // Todo: do this later, now only consider a normal line √
+        // Todo: hasn't considered the main axis
 
+//        const ClippedVertex *pa = nullptr;  // should be nullptr
+//        const ClippedVertex *pb = nullptr;
+
+        int main_axis = (abs(va.fb_position.x-vb.fb_position.x) > abs(va.fb_position.y-vb.fb_position.y)) ? 1 : 0;
+
+        float main_x1 = 0;
+        float main_x2 = 0;
+        float main_y1 = 0;
+        float main_y2 = 0;
+        float z1 = 0;
+        float z2 = 0;
+        // main axis: x
+        if (main_axis==1 && va.fb_position.x<vb.fb_position.x){
+            main_x1 = va.fb_position.x;
+            main_x2 = vb.fb_position.x;
+            main_y1 = va.fb_position.y;
+            main_y2 = vb.fb_position.y;
+            z1 = va.fb_position.z;
+            z2 = vb.fb_position.z;
+        }
+        else if (main_axis==1 && va.fb_position.x>vb.fb_position.x) {
+            main_x2 = va.fb_position.x;
+            main_x1 = vb.fb_position.x;
+            main_y2 = va.fb_position.y;
+            main_y1 = vb.fb_position.y;
+            z2 = va.fb_position.z;
+            z1 = vb.fb_position.z;
+        }
+        else if (main_axis==0 && va.fb_position.y<vb.fb_position.y) {
+            main_x1 = va.fb_position.y;
+            main_x2 = vb.fb_position.y;
+            main_y1 = va.fb_position.x;
+            main_y2 = vb.fb_position.x;
+            z1 = va.fb_position.z;
+            z2 = vb.fb_position.z;
+        }
+        else if (main_axis==0 && va.fb_position.y>vb.fb_position.y) {
+            main_x2 = va.fb_position.y;
+            main_x1 = vb.fb_position.y;
+            main_y2 = va.fb_position.x;
+            main_y1 = vb.fb_position.x;
+            z2 = va.fb_position.z;
+            z1 = vb.fb_position.z;
+        }
+
+        float k = (main_y2 - main_y1) / (main_x2 - main_x1);
+        float b = main_y1 - k*main_x1;
+
+        // get the largest integer smaller than x
+        uint32_t t1 = (uint32_t)floor(main_x1);
+        uint32_t t2 = (uint32_t)floor(main_x2);
+
+        for (uint32_t u = t1; u <= t2; u++) {
+            float w = (float) (u + 0.5 - main_x1) / (main_x2 - main_x1);  // a percentage
+            float v = (float) w * (main_y2 - main_y1) + main_y1;
+
+            float z = (float) w * (z2 - z1) + z1;
+            // raster a pixel (floor(u)+0.5, floor(v)+0.5)
+            Fragment mid;  //middle of a pixel
+            mid.fb_position = (main_axis==1) ? Vec3((float) floor(u) + 0.5f, (float) floor(v) + 0.5f, z) :  Vec3((float) floor(v) + 0.5f, (float) floor(u) + 0.5f, z);
+            mid.attributes = va.attributes;
+            mid.derivatives.fill(Vec2(0.0f, 0.0f));
+
+            // diamoned exit rule
+            float x, y;  // to get the bottom left point
+            // deal with start and end point
+            // special case: line in the same pixel
+            std::cout << std::endl << "this is u,v " << u << " " << v;
+            if (u==t1 && u==t2){
+                main_x1 = (main_x1 - floor(main_x1));
+                main_y1 = (main_y1 - floor(main_y1));
+                main_x2 = (main_x2 - floor(main_x2));
+                main_y2 = (main_y2 - floor(main_y2));
+                int isEntering = main_x1+main_y1<1.5 && main_y1-main_x1>=-0.5 && !((main_x1==0.5) && (main_y1==1)) && !((main_x1==1) && (main_y1==0.5));
+                int isExiting  = (main_x2+main_y2>1.5) || (main_y2-main_x2<-0.5) || ((main_x2==0.5) && (main_y2==1)) || ((main_x2==1) && (main_y2==0.5));
+
+                if (isEntering && isExiting) {
+                    emit_fragment(mid);
+                }
+                continue;
+            }
+            // start point
+            else if (u == t1){
+                std::cout << std::endl << "in start point";
+                x = (float) (main_x1-floor(u));
+                y = (float) (main_y1-floor(v));
+//                b = b-floor(b); //translate to [0,1]
+                if (b >= 0){
+                    b = b-floor(b); //translate to [0,1]
+                }
+                else if (b >= -1 && b < 0){
+                    // not sure what to do, just keep it
+                }
+                int isEntering = x+y<1.5 && y-x >= -0.5 && !((x==0.5) && (y==1)) && !((x==1) && (y==0.5));
+                int isExiting = ((1.5-b)/(1+k) >= 0.5 && (1.5-b)/(1+k) <= 1) || ((b+0.5)/(1-k) > 0.5 && (b+0.5)/(1-k)<1);
+
+                if (isEntering && isExiting) {
+                    emit_fragment(mid);
+                }
+                // horizontal line cross the bottom of the diamond
+                else if (x==0 && k == 0) {
+                    emit_fragment(mid);
+                }
+                continue;
+            }
+            // end point
+            else if (u == t2) {
+                std::cout << std::endl << "in end point";
+                x = (float) (main_x2-floor(u));
+                y = (float) (main_y2-floor(v));
+
+                int isExiting = x+y>1.5 || y-x<-0.5 || ((x==0.5) && (y==1)) || ((x==1) && (y==0.5));
+                if (isExiting) {
+                    emit_fragment(mid);
+                }
+                continue;
+            }
+//          shade all other points
+            emit_fragment(mid);
+        }
+        // to make the program run
+        // should be deleted
+//        Fragment mid;  //middle of a pixel
+//        mid.fb_position = va.fb_position;
+//        mid.attributes = va.attributes;
+//        mid.derivatives.fill(Vec2(0.0f, 0.0f));
+//        emit_fragment(mid);
+    }
 }
+
 
 /*
  * rasterize_triangle(a,b,c,emit) calls 'emit(frag)' at every location
@@ -420,12 +552,109 @@ void Pipeline<p, P, flags>::rasterize_triangle(
 	if constexpr ((flags & PipelineMask_Interp) == Pipeline_Interp_Flat) {
 		// A1T3: flat triangles
 		// TODO: rasterize triangle (see block comment above this function).
+        Point a = {va.fb_position.x, va.fb_position.y};
+        Point b = {vb.fb_position.x, vb.fb_position.y};
+        Point c = {vc.fb_position.x, vc.fb_position.y};
+        Point ac = VectorFromPoints(a, c);
+        Point ab = VectorFromPoints(a, b);
+        Point bc = VectorFromPoints(b, c);
+        Point ba = VectorFromPoints(b, a);
+        Point cb = VectorFromPoints(c, b);
+        Point ca = VectorFromPoints(c, a);
 
-		// As a placeholder, here's code that draws some lines:
+        // get the leftmost/upmost edge
+        Point leftEdgeStart = a;
+        Point leftEdgeEnd = b;
+        Point topEdgeStart = a;
+        Point topEdgeEnd = b;
+        bool hasTopEdge = false;
+        // there must have a left edge, but may have a top edge
+        if (isHorizontal(a, b, c)) {
+            if (c.y < a.y){
+                hasTopEdge = true;
+                topEdgeStart = a; topEdgeEnd = b;
+            }
+            leftEdgeStart = a.x < b.x ? a : b;
+            leftEdgeEnd = c;
+        } else if (isHorizontal(a, c, b)) {
+            if (b.y < a.y){
+                hasTopEdge = true;
+                topEdgeStart = a; topEdgeEnd = c;
+            }
+            leftEdgeStart = a.x < c.x ? a : c;
+            leftEdgeEnd = b;
+        } else if (isHorizontal(b, c, a)) {
+            if (a.y < b.y){
+                hasTopEdge = true;
+                topEdgeStart = b; topEdgeEnd = c;
+            }
+            leftEdgeStart = b.x < c.x ? b : c;
+            leftEdgeEnd = a;
+        }
+        // no horizontal line
+        else {
+            Point* leftMost = &a;
+            if (b.x < leftMost->x || (b.x == leftMost->x && b.y < leftMost->y)) {
+                leftMost = &b;
+            }
+            if (c.x < leftMost->x || (c.x == leftMost->x && c.y < leftMost->y)) {
+                leftMost = &c;
+            }
+
+            if (leftMost == &a) {
+                leftEdgeStart = a;
+                leftEdgeEnd = (b.x == a.x && b.y > a.y) ? b : c;
+            } else if (leftMost == &b) {
+                leftEdgeStart = b;
+                leftEdgeEnd = (c.x == b.x && c.y > b.y) ? c : a;
+            } else { // leftMost == &c
+                leftEdgeStart = c;
+                leftEdgeEnd = (a.x == c.x && a.y > c.y) ? a : b;
+            }
+        }
+
+        float minX = std::min({va.fb_position.x, vb.fb_position.x, vc.fb_position.x});
+        float maxX = std::max({va.fb_position.x, vb.fb_position.x, vc.fb_position.x});
+        float minY = std::min({va.fb_position.y, vb.fb_position.y, vc.fb_position.y});
+        float maxY = std::max({va.fb_position.y, vb.fb_position.y, vc.fb_position.y});
+
+        // judge whether a point is inside the triangle
+        for (float x = floor(minX); x <= floor(maxX); ++x) {
+            for (float y = floor(minY); y <= floor(maxY); ++y) {
+                float centerX = x + 0.5f;
+                float centerY = y + 0.5f;
+                Point q = {centerX, centerY};
+                Point cq = VectorFromPoints(c, q);
+                Point aq = VectorFromPoints(a, q);
+                Point bq = VectorFromPoints(b, q);
+                float crossa = Cross(ab, aq);
+                float crossb = Cross(bc, bq);
+                float crossc = Cross(ca, cq);
+
+                Fragment frag;
+                frag.fb_position = Vec3(centerX, centerY, va.fb_position.z);
+                frag.attributes = va.attributes;
+                // top edge
+                if (hasTopEdge && onEdge(topEdgeStart, topEdgeEnd, q)) {
+                    emit_fragment(frag);
+                }
+                // left edge
+                else if(onEdge(leftEdgeStart, leftEdgeEnd, q)){
+                    emit_fragment(frag);
+                }
+                // in the triangle
+                else if ((crossa > 0 && crossb > 0 && crossc > 0) ||
+                    (crossa < 0 && crossb < 0 && crossc < 0)) {
+                    emit_fragment(frag);
+                }
+                // else: do nothing
+            }
+        }
+        // As a placeholder, here's code that draws some lines:
 		//(remove this and replace it with a real solution)
-		Pipeline<PrimitiveType::Lines, P, flags>::rasterize_line(va, vb, emit_fragment);
-		Pipeline<PrimitiveType::Lines, P, flags>::rasterize_line(vb, vc, emit_fragment);
-		Pipeline<PrimitiveType::Lines, P, flags>::rasterize_line(vc, va, emit_fragment);
+//		Pipeline<PrimitiveType::Lines, P, flags>::rasterize_line(va, vb, emit_fragment);
+//		Pipeline<PrimitiveType::Lines, P, flags>::rasterize_line(vb, vc, emit_fragment);
+//		Pipeline<PrimitiveType::Lines, P, flags>::rasterize_line(vc, va, emit_fragment);
 	} else if constexpr ((flags & PipelineMask_Interp) == Pipeline_Interp_Smooth) {
 		// A1T5: screen-space smooth triangles
 		// TODO: rasterize triangle (see block comment above this function).

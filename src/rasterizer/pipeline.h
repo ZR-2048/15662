@@ -14,6 +14,32 @@
 
 struct Framebuffer;
 
+struct Point {
+    float x, y;
+};
+
+inline Point VectorFromPoints(const Point& a, const Point& b) {
+    return {b.x - a.x, b.y - a.y};
+}
+
+inline float Cross(Point const& va, Point const& vb){
+    return va.x*vb.y - va.y*vb.x;
+}
+
+inline bool isHorizontal(const Point& p1, const Point& p2, const Point& p3) {
+    return p1.y == p2.y;
+}
+
+// Cross product
+inline auto onEdge = [](const Point& p1, const Point& p2, const Point& q) {
+    Point pq = {q.x - p1.x, q.y - p1.y};
+    Point p2p1 = {p2.x - p1.x, p2.y - p1.y};
+
+    float cross = pq.x * p2p1.y - pq.y * p2p1.x;
+
+    return fabs(cross) < 1e-6;
+};
+
 // A `Pipeline` can rasterize two primitive types:
 enum class PrimitiveType {
 	Lines,    // interpret (vertices[2i], vertices[2i+1]) as a line
