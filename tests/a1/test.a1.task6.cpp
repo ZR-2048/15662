@@ -302,3 +302,98 @@ Test test_a1_task6_lod_simple("a1.task6.lod.simple", []() {
 
 });
 
+Test test_a1_task6_bilinear_corners("a1.task6.sample.bilinear.corners", []() {
+    //check bilinear sampling is mixing the right stuff:
+
+    HDR_Image image(3,5, std::vector< Spectrum >{
+            R, G, B,
+            G, B, R,
+            B, R, G,
+            R, G, B,
+            G, B, W
+    });
+
+    auto expect_spectrum = [&](std::string const &desc, Vec2 uv, Spectrum expected){
+        Spectrum got = Textures::sample_bilinear(image, uv);
+
+        if (Test::differs(got, expected)) {
+            std::string params;
+            params += "case '" + desc + "':\n";
+            params += "        uv: " + to_string(uv) + "\n";
+            params += "  expected: " + to_string(expected) + "\n";
+            params += "       got: " + to_string(got);
+
+            puts("");
+            info("%s",params.c_str());
+
+            throw Test::error("Got unexpected color in '" + desc + "' case.");
+        }
+    };
+
+    Vec2 px_to_uv(1.0f / image.w, 1.0f / image.h);
+
+    expect_spectrum("lower left corner", px_to_uv * Vec2(0.25f, 0.25f), R);
+    expect_spectrum("upper left corner", px_to_uv * Vec2(0.25f, 4.75f), G);
+    expect_spectrum("lower right corner", px_to_uv * Vec2(2.75f, 0.25f), B);
+    expect_spectrum("upper right corner", px_to_uv * Vec2(2.75f, 4.75f), W);
+
+    expect_spectrum("left (between B & R)", px_to_uv * Vec2(0.25f, 2.6f), Spectrum(0.1f, 0.0f, 0.9f));
+    expect_spectrum("right (between G & B)", px_to_uv * Vec2(2.75f, 2.6f), Spectrum(0.0f, 0.9f, 0.1f));
+    expect_spectrum("lower (between G & B)", px_to_uv * Vec2(1.7f, 0.25f), Spectrum(0.0f, 0.8f, 0.2f));
+    expect_spectrum("upper (between G & B)", px_to_uv * Vec2(0.7f, 4.75f), Spectrum(0.0f, 0.8f, 0.2f));
+});
+
+//Test test_a1_task6_generate_mipmap_7by7("a1.task6.generate_mipmap.7by7", []() {
+//    HDR_Image image( 7, 7, std::vector< Spectrum >{
+//            R, G, B, R, G, B, R, // 3R, 2G, 2B
+//            G, B, R, G, B, R, R,
+//            B, R, G, B, R, R, G,
+//            R, G, B, R, R, G, B,
+//            G, B, R, R, G, B, R,
+//            B, R, R, G, B, R, G,
+//            R, R, G, B, R, G, B,
+//    });
+//    std::vector< HDR_Image > levels;
+//    Textures::generate_mipmap(image, &levels);
+//    std::vector< std::pair< uint32_t, uint32_t > > expected{
+//            {3,3},
+//            {1,1}
+//    };
+//    std::vector< std::vector< Spectrum > > expected_colors{
+//            { // each has 49/9 area in total
+//                    Spectrum(15.0f,19.0f,15.0f) / 49.0f,Spectrum(17.0f,17.0f,15.0f) / 49.0f,Spectrum(31.0f,6.0f,12.0f) / 49.0f,
+//                    Spectrum(17.0f,17.0f,15.0f) / 49.0f,Spectrum(29.0f,8.0f,12.0f) / 49.0f,Spectrum(17.0f,17.0f,15.0f) / 49.0f,
+//                    Spectrum(31.0f,6.0f,12.0f) / 49.0f,Spectrum(17.0f,17.0f,15.0f) / 49.0f,Spectrum(15.0f,19.0f,15.0f) / 49.0f
+//            },
+//            { Spectrum(3.0f / 7.0f, 2.0f / 7.0f, 2.0f / 7.0f) }
+//    };
+//    //has the right number of levels:
+//    if (levels.size() != expected.size()) {
+//        throw Test::error("Image of size " + std::to_string(image.w) + "x" + std::to_string(image.h) + " should have " + std::to_string(expected.size()) + " levels, but generated " + std::to_string(levels.size()) + ".");
+//    }
+//    //has right level sizes:
+//    for (uint32_t l = 0; l < expected.size(); ++l) {
+//        if (levels[l].w != expected[l].first || levels[l].h != expected[l].second) {
+//            throw Test::error("Image of size " + std::to_string(image.w) + "x" + std::to_string(image.h) + " should have levels[" + std::to_string(l) + "] of size " + std::to_string(expected[l].first) + "x" + std::to_string(expected[l].second) + " but generated level of size " + std::to_string(levels[l].w) + "x" + std::to_string(levels[l].h) + ".");
+//        }
+//    }
+//    //has the right color
+//    for(uint32_t l = 0; l < expected_colors.size(); l++){
+//        float w = (float)levels[l].w, h = (float)levels[l].h;
+//        for(int j=0;j<h;j++)
+//            for(int i=0;i<w;i++){
+//                auto expected_color = expected_colors[l][j*w + i];
+//                if (Test::differs(levels[l].at(i,j), expected_color)) {
+//                    std::string params;
+//                    params += "at row " + std::to_string(j) + " col " + std::to_string(i) +"\n";
+//                    params += "expected: " + to_string(expected_color) + "\n";
+//                    params += "     got: " + to_string(levels[l].at(i,j));
+//                    puts("");
+//                    info("%s",params.c_str());
+//                    throw Test::error("Mipmap generation didn't approximately average this texel.");
+//                }
+//            }
+//    }
+//
+//});
+

@@ -50,17 +50,17 @@ struct Lambertian {
 	};
 	// fragment attribute layout:
 
-	enum { 
-		FA_TexCoordU, 
-		FA_TexCoordV, 
-		FA_NormalX, 
-		FA_NormalY, 
-		FA_NormalZ, 
+	enum {
+		FA_TexCoordU,
+		FA_TexCoordV,
+		FA_NormalX,
+		FA_NormalY,
+		FA_NormalZ,
 		FA
 	};
 	// request derivatives for first two attributes (the texture coordinates):
-	enum { 
-		FD = 2 
+	enum {
+		FD = 2
 	};
 
 
@@ -123,7 +123,27 @@ struct Lambertian {
 		// reading onward, you will discover that \rho can be computed in a number of ways
 		//  it is up to you to select one that makes sense in this context
 
-		float lod = 0.0f; //<-- replace this line
+        // lod = log2(L), where L = max(sqrt((du/dx)^2+(dv/dx)^2), sqrt((du/dy)^2++(dv/dy)^2))
+        // Compute the square of the lengths of the gradients:
+//        printf("\n--------------------------------");
+//        printf("\nwh is %f %f", wh.x, wh.y);
+//        printf("\nfdx_texcoord is %f %f", fdx_texcoord.x*wh.x, fdx_texcoord.y*wh.x);
+//        printf("\nfdy_texcoord is %f %f", fdy_texcoord.x*wh.y, fdy_texcoord.y*wh.y);
+        float Lx = (float)pow(fdx_texcoord.x * wh.x, 2) + (float)pow(fdx_texcoord.y * wh.y, 2);
+        float Ly = (float)pow(fdy_texcoord.x * wh.x, 2) + (float)pow(fdy_texcoord.y * wh.y, 2);
+
+//        printf("\nLx, Ly is %f %f", Lx, Ly);
+
+        // Check if the derivatives are zero:
+//        bool derivativesAreZero = (fdx_texcoord.x == 0.0f && fdx_texcoord.y == 0.0f &&
+//                                   fdy_texcoord.x == 0.0f && fdy_texcoord.y == 0.0f);
+
+        // If derivatives are zero, set LOD to zero to prevent artifacts:
+//        float lod = derivativesAreZero ? 0.0f : log2(sqrt(std::max(Lx, Ly)));
+        float lod = log2(sqrt(std::max(Lx, Ly)));
+        lod = std::max(lod, 0.0f); // Ensure LOD is not negative and handle zero derivatives case
+//        printf("\nlod is %f", lod);
+//        printf("\n--------------------");
 		//-----
 
 		Vec3 normal = fa_normal.unit();
@@ -159,16 +179,16 @@ struct Copy {
 		VA
 	};
 	// fragment attribute layout:
-	enum { 
-		FA_ColorR, 
-		FA_ColorG, 
-		FA_ColorB, 
-		FA_ColorA, 
-		FA 
+	enum {
+		FA_ColorR,
+		FA_ColorG,
+		FA_ColorB,
+		FA_ColorA,
+		FA
 	};
 	// request derivatives for first two attributes (ColorR, ColorG):
-	enum { 
-		FD = 2 
+	enum {
+		FD = 2
 	};
 
 	static void

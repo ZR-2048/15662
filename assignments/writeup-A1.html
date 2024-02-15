@@ -72,7 +72,7 @@ checking that rasterizing with different blend and depth modes will look decent.
 
 Reference image:
 <div class="twentytwenty-container">
-    <img src="A1-writeup/reference/task5-smooth-correct-triangles.png" alt="Rasterize smooth and correct cubes">
+    <img src="A1-writeup/reference/T5.png" alt="Rasterize smooth and correct cubes">
 </div>
 Please replace the above image with your own screenshot of the rasterized smooth and correct triangles cubes.
 This can be done by doing the following:
@@ -94,23 +94,25 @@ checking that rasterizing the samplers scene will look decent.
 
 Insert a picture of your sample pattern here (up to you on how you created it):
 <div class="twentytwenty-container">
-    <img src="A1-writeup/reference/task7-sample-pattern.png" alt="Sample pattern">
+    <img src="A1-writeup/reference/T7%20my_sample_pattern.png" alt="Sample pattern">
 </div>
 
-Explanation of what your SamplePattern does and scenarios it would do well and poorly in:
-
-Your completion will be graded based on the above answer, the reference `test.a1.task7.cpp` file and 
-checking that rasterizing the samplers scene will look decent.
+I create a simple sample pattern which has four sample points at four corners.
+I think it works well with those simple images, but doesn't work well with complex image because it doesn't include the center points
+If the image is striped, it may not work well.
 
 (##) RASTERIZED IMAGE FINAL
 
 Your image:
 <div class="twentytwenty-container">
-    <img src="A1-writeup/reference/rasterize_image.png" alt="Your creation">
+    <img src="A1-writeup/reference/render.png" alt="Your creation">
 </div>
 Explanation of what it is and how you made it:
+I load the scene cow.js3d and change its color to light red (197,91,91), open render window, change the pattern to my own pattern and get the image
+I can see distinct difference applying different patterns.
 
 Any free model sources you need to credit?
+No
 
 (##) EXTRA CREDIT FINAL
 
@@ -118,7 +120,10 @@ Use this section to explain any extra credit implementations you have made.
 
 (##) Feedback
 
-Use this section to provide feedback about the assignment.
+I find the first assignment pretty hard because I need to spend a lot of time to understand what is input, what is output,
+how to match all the function and parameters to what is taught in the lecture.
+However, i learn a lot from C++ grammar to system debugging, from rasterization pipeline to certain algorithm.
+It is really a sense of achievement to get my final rasterized image.
 
 <!--- Markdeep & image comparison library - probably no need to change anything below -->
 <style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style>

@@ -32,10 +32,29 @@ HDR_Image Framebuffer::resolve_colors() const {
 	HDR_Image image(width, height);
 
 	for (uint32_t y = 0; y < height; ++y) {
+        // for each pixel
 		for (uint32_t x = 0; x < width; ++x) {
-			image.at(x, y) = color_at(x, y, 0);
-		}
-	}
-
-	return image;
+            Spectrum color(0.0f);
+            float total_weight = 0.0f;
+            // for each sample
+            for (uint32_t s = 0; s < sample_pattern.centers_and_weights.size(); ++s) {
+                Vec3 sample = sample_pattern.centers_and_weights[s];
+                color += color_at(x,y,s); // how to implement weight?
+                total_weight += sample.z;
+            }
+            image.at(x, y) = color / total_weight;
+        }
+    }
+    return image;
 }
+//HDR_Image Framebuffer::resolve_colors() const {
+//    HDR_Image image(width, height);
+//
+//    for (uint32_t y = 0; y < height; ++y) {
+//        for (uint32_t x = 0; x < width; ++x) {
+//            image.at(x, y) = color_at(x, y, 0);
+//        }
+//    }
+//
+//    return image;
+//}
