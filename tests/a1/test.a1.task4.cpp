@@ -196,6 +196,3 @@ Test test_a1_task4_blend_over_1("a1.task4.blend.over.1", []() {
 		interpolated_depth, Spectrum(0.1f, 0.2f, 0.3f) //out
 	);
 });
-
-
-

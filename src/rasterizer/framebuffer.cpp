@@ -48,6 +48,9 @@ HDR_Image Framebuffer::resolve_colors() const {
     return image;
 }
 //HDR_Image Framebuffer::resolve_colors() const {
+//    // A1T7: resolve_colors
+//    // TODO: update to support sample patterns with more than one sample.
+//
 //    HDR_Image image(width, height);
 //
 //    for (uint32_t y = 0; y < height; ++y) {

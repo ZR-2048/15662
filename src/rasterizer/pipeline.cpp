@@ -75,15 +75,21 @@ void Pipeline<primitive_type, Program, flags>::run(std::vector<Vertex> const& ve
             ClippedVertex cv;
             float inv_w = 1.0f / sv.clip_position.w;
             cv.fb_position = clip_to_fb_scale * inv_w * sv.clip_position.xyz() + clip_to_fb_offset;
-            // todo:here!
-            // add the offset
-            cv.fb_position.x += offsetX;
-            cv.fb_position.y += offsetY;
+
 
             cv.inv_w = inv_w;
             cv.attributes = sv.attributes;
             clipped_vertices.emplace_back(cv);
         };
+
+        // offset
+//        std::vector<ClippedVertex> adjusted_vertices;
+//        for (auto const v : clipped_vertices) {
+//            ClippedVertex adjusted_v = v;
+//            adjusted_v.fb_position.x += offsetX;
+//            adjusted_v.fb_position.y += offsetY;
+//            adjusted_vertices.push_back(adjusted_v);
+//        }
 
         // actually do clipping:
         if constexpr (primitive_type == PrimitiveType::Lines) {
@@ -113,7 +119,21 @@ void Pipeline<primitive_type, Program, flags>::run(std::vector<Vertex> const& ve
             }
         } else if constexpr (primitive_type == PrimitiveType::Triangles) {
             for (uint32_t i = 0; i + 2 < clipped_vertices.size(); i += 3) {
-                rasterize_triangle(clipped_vertices[i], clipped_vertices[i + 1], clipped_vertices[i + 2],
+//                std::printf("\nin sample %d\nadjusted vertices %f %f", s,adjusted_vertices[s].fb_position.x, adjusted_vertices[s].fb_position.y);
+
+                ClippedVertex vertices1 = clipped_vertices[i];
+                vertices1.fb_position.x += offsetX;
+                vertices1.fb_position.y += offsetY;
+                ClippedVertex vertices2 = clipped_vertices[i+1];
+                vertices2.fb_position.x += offsetX;
+                vertices2.fb_position.y += offsetY;
+                ClippedVertex vertices3 = clipped_vertices[i+2];
+                vertices3.fb_position.x += offsetX;
+                vertices3.fb_position.y += offsetY;
+
+//                rasterize_triangle(clipped_vertices[i], clipped_vertices[i + 1], clipped_vertices[i + 2],
+//                                   emit_fragment);
+                rasterize_triangle(vertices1, vertices2, vertices3,
                                    emit_fragment);
             }
         } else {
@@ -560,7 +580,7 @@ void Pipeline<p, P, flags>::rasterize_triangle(
 	//  same code paths. Be aware, however, that all of them need to remain working!
 	//  (e.g., if you break Flat while implementing Correct, you won't get points
 	//   for Flat.)
-    auto barycentric_coordinates = [&] (Point a, Point b, Point c, Point q) {
+    auto barycentric_coordinates = [&] (Vec2 a, Vec2 b, Vec2 c, Vec2 q) {
         // get barycentric coordinates
         float Sabc = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
         float Sqbc = (b.x - q.x) * (c.y - q.y) - (c.x - q.x) * (b.y - q.y);
@@ -574,13 +594,36 @@ void Pipeline<p, P, flags>::rasterize_triangle(
         return Vec3(alpha, beta, theta);
     };
 
+    auto VectorFromPoints = [&](const Vec2& a, const Vec2& b) {
+        return Vec2{b.x - a.x, b.y - a.y};
+    };
+
+    auto Cross = [&](Vec2 const& va, Vec2 const& vb){
+        return va.x*vb.y - va.y*vb.x;
+    };
+
+    auto isHorizontal = [&](Vec2 & p1, Vec2 & p2, Vec2 & p3) {
+        return p1.y == p2.y;
+    };
+
+    // Cross product
+     auto onEdge = [&](const Vec2& p1, const Vec2& p2, const Vec2& q) {
+         Vec2 pq = Vec2{q.x - p1.x, q.y - p1.y};
+         Vec2 p2p1 = Vec2{p2.x - p1.x, p2.y - p1.y};
+
+        float cross = pq.x * p2p1.y - pq.y * p2p1.x;
+
+        return fabs(cross) < 1e-6;
+    };
+
+//     printf("\nva.fb.position.x %f va.fb.position.y %f", va.fb_position.x, va.fb_position.y);
     // derivatives
-    Point a_a = {va.fb_position.x, va.fb_position.y};
-    Point b_b = {vb.fb_position.x, vb.fb_position.y};
-    Point c_c = {vc.fb_position.x, vc.fb_position.y};
-    Point q_a = a_a;
-    Point q_a_up = {a_a.x, a_a.y+1};
-    Point q_a_right = {a_a.x+1, a_a.y};
+    Vec2 a_a = Vec2{va.fb_position.x, va.fb_position.y};
+    Vec2 b_b = Vec2{vb.fb_position.x, vb.fb_position.y};
+    Vec2 c_c = Vec2{vc.fb_position.x, vc.fb_position.y};
+    Vec2 q_a = a_a;
+    Vec2 q_a_up = Vec2{a_a.x, a_a.y+1};
+    Vec2 q_a_right = Vec2{a_a.x+1, a_a.y};
     Vec3 q_a_barycentric = barycentric_coordinates(a_a,b_b,c_c,q_a);
     Vec3 q_a_up_barycentric = barycentric_coordinates(a_a,b_b,c_c,q_a_up);
     Vec3 q_a_right_barycentric = barycentric_coordinates(a_a,b_b,c_c,q_a_right);
@@ -598,21 +641,21 @@ void Pipeline<p, P, flags>::rasterize_triangle(
     if constexpr ((flags & PipelineMask_Interp) == Pipeline_Interp_Flat) {
 		// A1T3: flat triangles
 		// TODO: rasterize triangle (see block comment above this function).
-        Point a = {va.fb_position.x, va.fb_position.y};
-        Point b = {vb.fb_position.x, vb.fb_position.y};
-        Point c = {vc.fb_position.x, vc.fb_position.y};
-        Point ac = VectorFromPoints(a, c);
-        Point ab = VectorFromPoints(a, b);
-        Point bc = VectorFromPoints(b, c);
-        Point ba = VectorFromPoints(b, a);
-        Point cb = VectorFromPoints(c, b);
-        Point ca = VectorFromPoints(c, a);
+        Vec2 a = Vec2{va.fb_position.x, va.fb_position.y};
+        Vec2 b = Vec2{vb.fb_position.x, vb.fb_position.y};
+        Vec2 c = Vec2{vc.fb_position.x, vc.fb_position.y};
+        Vec2 ac = VectorFromPoints(a, c);
+        Vec2 ab = VectorFromPoints(a, b);
+        Vec2 bc = VectorFromPoints(b, c);
+        Vec2 ba = VectorFromPoints(b, a);
+        Vec2 cb = VectorFromPoints(c, b);
+        Vec2 ca = VectorFromPoints(c, a);
 
         // get the leftmost/upmost edge
-        Point leftEdgeStart = a;
-        Point leftEdgeEnd = b;
-        Point topEdgeStart = a;
-        Point topEdgeEnd = b;
+        Vec2 leftEdgeStart = a;
+        Vec2 leftEdgeEnd = b;
+        Vec2 topEdgeStart = a;
+        Vec2 topEdgeEnd = b;
         bool hasTopEdge = false;
         // there must have a left edge, but may have a top edge
         if (isHorizontal(a, b, c)) {
@@ -639,7 +682,7 @@ void Pipeline<p, P, flags>::rasterize_triangle(
         }
         // no horizontal line
         else {
-            Point* leftMost = &a;
+            Vec2* leftMost = &a;
             if (b.x < leftMost->x || (b.x == leftMost->x && b.y < leftMost->y)) {
                 leftMost = &b;
             }
@@ -669,10 +712,10 @@ void Pipeline<p, P, flags>::rasterize_triangle(
             for (float y = floor(minY); y <= floor(maxY); ++y) {
                 float centerX = x + 0.5f;
                 float centerY = y + 0.5f;
-                Point q = {centerX, centerY};
-                Point cq = VectorFromPoints(c, q);
-                Point aq = VectorFromPoints(a, q);
-                Point bq = VectorFromPoints(b, q);
+                Vec2 q = Vec2{centerX, centerY};
+                Vec2 cq = VectorFromPoints(c, q);
+                Vec2 aq = VectorFromPoints(a, q);
+                Vec2 bq = VectorFromPoints(b, q);
                 float crossa = Cross(ab, aq);
                 float crossb = Cross(bc, bq);
                 float crossc = Cross(ca, cq);
@@ -705,9 +748,9 @@ void Pipeline<p, P, flags>::rasterize_triangle(
 		// A1T5: screen-space smooth triangles
 		// TODO: rasterize triangle (see block comment above this function).
 
-        Point a = {va.fb_position.x, va.fb_position.y};
-        Point b = {vb.fb_position.x, vb.fb_position.y};
-        Point c = {vc.fb_position.x, vc.fb_position.y};
+        Vec2 a = Vec2{va.fb_position.x, va.fb_position.y};
+        Vec2 b = Vec2{vb.fb_position.x, vb.fb_position.y};
+        Vec2 c = Vec2{vc.fb_position.x, vc.fb_position.y};
 
         float minX = std::min({a.x, b.x, c.x});
         float maxX = std::max({a.x, b.x, c.x});
@@ -718,9 +761,9 @@ void Pipeline<p, P, flags>::rasterize_triangle(
             for (float y = floor(minY); y <= floor(maxY); ++y) {
                 float centerX = x + 0.5f;
                 float centerY = y + 0.5f;
-                Point q = {centerX, centerY};
-                Point q_up = {centerX, centerY+1};
-                Point q_right = {centerX+1, centerY};
+                Vec2 q = Vec2{centerX, centerY};
+                Vec2 q_up = Vec2{centerX, centerY+1};
+                Vec2 q_right = Vec2{centerX+1, centerY};
                 Vec3 q_barycentric = barycentric_coordinates(a,b,c,q);
                 Vec3 q_up_barycentric = barycentric_coordinates(a,b,c,q_up);
                 Vec3 q_right_barycentric = barycentric_coordinates(a,b,c,q_right);
@@ -753,9 +796,9 @@ void Pipeline<p, P, flags>::rasterize_triangle(
 	} else if constexpr ((flags & PipelineMask_Interp) == Pipeline_Interp_Correct) {
 		// A1T5: perspective correct triangles
 		// TODO: rasterize triangle (block comment above this function).
-        Point a = {va.fb_position.x, va.fb_position.y};
-        Point b = {vb.fb_position.x, vb.fb_position.y};
-        Point c = {vc.fb_position.x, vc.fb_position.y};
+        Vec2 a = Vec2{va.fb_position.x, va.fb_position.y};
+        Vec2 b = Vec2{vb.fb_position.x, vb.fb_position.y};
+        Vec2 c = Vec2{vc.fb_position.x, vc.fb_position.y};
 
         float minX = std::min({a.x, b.x, c.x});
         float maxX = std::max({a.x, b.x, c.x});
@@ -766,7 +809,7 @@ void Pipeline<p, P, flags>::rasterize_triangle(
             for (float y = floor(minY); y <= floor(maxY); ++y) {
                 float centerX = x + 0.5f;
                 float centerY = y + 0.5f;
-                Point q = {centerX, centerY};
+                Vec2 q = Vec2{centerX, centerY};
 
                 Vec3 q_barycentric = barycentric_coordinates(a, b, c, q);
 
