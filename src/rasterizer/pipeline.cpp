@@ -773,7 +773,7 @@ void Pipeline<p, P, flags>::rasterize_triangle(
                     std::array<float, 5> q_up_attributes = {0,0,0,0,0};
                     std::array<float, 5> q_right_attributes = {0,0,0,0,0};
 
-                    for (int i = 0; i < sizeof(va.attributes)/sizeof(va.attributes[0]); ++i) {
+                    for (int i = 0; i < (int)sizeof(va.attributes)/(int)sizeof(va.attributes[0]); ++i) {
                         q_attributes[i] = q_barycentric.x * va.attributes[i] + q_barycentric.y * vb.attributes[i] + q_barycentric.z * vc.attributes[i];
                         q_up_attributes[i] = q_up_barycentric.x * va.attributes[i] + q_up_barycentric.y * vb.attributes[i] + q_up_barycentric.z * vc.attributes[i];
                         q_right_attributes[i] = q_right_barycentric.x * va.attributes[i] + q_right_barycentric.y * vb.attributes[i] + q_right_barycentric.z * vc.attributes[i];
@@ -819,7 +819,7 @@ void Pipeline<p, P, flags>::rasterize_triangle(
 
                 std::array<float, 5> q_attributes = {0,0,0,0,0};
 
-                for (int i = 0; i < sizeof(va.attributes)/sizeof(va.attributes[0]); ++i) {
+                for (int i = 0; i < (int)sizeof(va.attributes)/(int)sizeof(va.attributes[0]); ++i) {
                     q_attributes[i] = (q_barycentric.x * va.attributes[i] * va.inv_w +
                                        q_barycentric.y * vb.attributes[i] * vb.inv_w +
                                        q_barycentric.z * vc.attributes[i] * vc.inv_w) * w;
