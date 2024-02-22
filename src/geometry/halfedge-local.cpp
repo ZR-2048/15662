@@ -905,7 +905,7 @@ void Halfedge_Mesh::extrude_positions(FaceRef face, Vec3 move, float shrink) {
     // edge case 1: shrink > 1 face is a point. < 0 can always work?
     // no other edge case
     if (shrink > 1){
-        shrink = 1
+        shrink = 1;
     }
     else{
         HalfedgeRef h = face->halfedge;
