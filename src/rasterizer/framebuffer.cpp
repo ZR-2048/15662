@@ -39,7 +39,7 @@ HDR_Image Framebuffer::resolve_colors() const {
             // for each sample
             for (uint32_t s = 0; s < sample_pattern.centers_and_weights.size(); ++s) {
                 Vec3 sample = sample_pattern.centers_and_weights[s];
-                color += color_at(x,y,s); // how to implement weight?
+                color += color_at(x,y,s) * sample.z; // how to implement weight?
                 total_weight += sample.z;
             }
             image.at(x, y) = color / total_weight;

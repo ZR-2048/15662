@@ -64,7 +64,7 @@ Spectrum sample_bilinear(HDR_Image const &image, Vec2 uv) {
     }
     else {
         // Get the four texels surrounding the coordinates:
-        printf("\nin sample bilinear x0, y0 are %d %d\n", x0, y0);
+//        printf("\nin sample bilinear x0, y0 are %d %d\n", x0, y0);
         Spectrum c00 = image.at(x0, y0);
         Spectrum c10 = x0 < ((int32_t) image.w - 1) ? image.at(x0 + 1, y0) : c00;
         Spectrum c01 = y0 < ((int32_t) image.h - 1) ? image.at(x0, y0 + 1) : c00;

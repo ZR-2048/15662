@@ -115,12 +115,19 @@ void Pipeline<primitive_type, Program, flags>::run(std::vector<Vertex> const& ve
         // actually do rasterization:
         if constexpr (primitive_type == PrimitiveType::Lines) {
             for (uint32_t i = 0; i + 1 < clipped_vertices.size(); i += 2) {
-                rasterize_line(clipped_vertices[i], clipped_vertices[i + 1], emit_fragment);
+                ClippedVertex vertices1 = clipped_vertices[i];
+                vertices1.fb_position.x += offsetX;
+                vertices1.fb_position.y += offsetY;
+                ClippedVertex vertices2 = clipped_vertices[i+1];
+                vertices2.fb_position.x += offsetX;
+                vertices2.fb_position.y += offsetY;
+                rasterize_line(vertices1, vertices2, emit_fragment);
             }
         } else if constexpr (primitive_type == PrimitiveType::Triangles) {
             for (uint32_t i = 0; i + 2 < clipped_vertices.size(); i += 3) {
 //                std::printf("\nin sample %d\nadjusted vertices %f %f", s,adjusted_vertices[s].fb_position.x, adjusted_vertices[s].fb_position.y);
-
+//                rasterize_triangle(clipped_vertices[i], clipped_vertices[i + 1], clipped_vertices[i + 2],
+//                                   emit_fragment);
                 ClippedVertex vertices1 = clipped_vertices[i];
                 vertices1.fb_position.x += offsetX;
                 vertices1.fb_position.y += offsetY;
@@ -130,9 +137,6 @@ void Pipeline<primitive_type, Program, flags>::run(std::vector<Vertex> const& ve
                 ClippedVertex vertices3 = clipped_vertices[i+2];
                 vertices3.fb_position.x += offsetX;
                 vertices3.fb_position.y += offsetY;
-
-//                rasterize_triangle(clipped_vertices[i], clipped_vertices[i + 1], clipped_vertices[i + 2],
-//                                   emit_fragment);
                 rasterize_triangle(vertices1, vertices2, vertices3,
                                    emit_fragment);
             }
@@ -160,9 +164,8 @@ void Pipeline<primitive_type, Program, flags>::run(std::vector<Vertex> const& ve
             }
 
             // local names that refer to destination sample in framebuffer:
-            float &fb_depth = framebuffer.depth_at(x, y, 0);
-            Spectrum &fb_color = framebuffer.color_at(x, y, 0);
-
+            float &fb_depth = framebuffer.depth_at(x, y, s);
+            Spectrum &fb_color = framebuffer.color_at(x, y, s);
 
             // depth test:
             if constexpr ((flags & PipelineMask_Depth) == Pipeline_Depth_Always) {
