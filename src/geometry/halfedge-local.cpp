@@ -732,12 +732,12 @@ std::optional<Halfedge_Mesh::VertexRef> Halfedge_Mesh::collapse_edge(EdgeRef e) 
      *   \ |
      *    \2
      */
-    bool isTriangle = false;
+//    bool isTriangle = false;
     // h: line 0-1; lat_h: line 0-2; dup_h: line 1-2
     HalfedgeRef dup_h = lat_h->next;  // assume 0-1 collapse, and keep 0-2 instead of 1-2
     HalfedgeRef dup_h_t = dup_h->twin;  // 1->2
     if (h->next->next->next == h){
-        isTriangle = true;
+//        isTriangle = true;
 //        std::cout << "\n dup_h is " << dup_h->id;
 //        std::cout << "\n dup_h_t is " << dup_h_t->id;
         erase_face(dup_h->face);
