@@ -1,0 +1,20 @@
+[
+{
+  "directory": "D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/build",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1438~1.331\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -ID:\\CMU\\2024 -I\"D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\Spring\\15662\" -I\"D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\Computer\" -I\"D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\Graphics\\Scotty3D\\src\" /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od /RTC1 -std:c++17 -MDd -Zi /FoCMakeFiles\\Scotty3D.dir\\tests\\a0\\test.a0.task2.problems.cpp.obj /FdTARGET_COMPILE_PDB /FS -c \"D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\tests\\a0\\test.a0.task2.problems.cpp\"",
+  "file": "D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\tests\\a0\\test.a0.task2.problems.cpp",
+  "output": "CMakeFiles\\Scotty3D.dir\\tests\\a0\\test.a0.task2.problems.cpp.obj"
+},
+{
+  "directory": "D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/build",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1438~1.331\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -ID:\\CMU\\2024 -I\"D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\Spring\\15662\" -I\"D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\Computer\" -I\"D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\Graphics\\Scotty3D\\src\" /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od /RTC1 -std:c++17 -MDd -Zi /FoCMakeFiles\\Scotty3D.dir\\src\\scene\\transform.cpp.obj /FdTARGET_COMPILE_PDB /FS -c \"D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\src\\scene\\transform.cpp\"",
+  "file": "D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\src\\scene\\transform.cpp",
+  "output": "CMakeFiles\\Scotty3D.dir\\src\\scene\\transform.cpp.obj"
+},
+{
+  "directory": "D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/build",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1438~1.331\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -ID:\\CMU\\2024 -I\"D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\Spring\\15662\" -I\"D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\Computer\" -I\"D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\Graphics\\Scotty3D\\src\" /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od /RTC1 -std:c++17 -MDd -Zi /FoCMakeFiles\\Scotty3D.dir\\tests\\a1\\test.a1.task1.cpp.obj /FdTARGET_COMPILE_PDB /FS -c \"D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\tests\\a1\\test.a1.task1.cpp\"",
+  "file": "D:\\CMU\\2024 Spring\\15662 Computer Graphics\\Scotty3D\\tests\\a1\\test.a1.task1.cpp",
+  "output": "CMakeFiles\\Scotty3D.dir\\tests\\a1\\test.a1.task1.cpp.obj"
+}
+]

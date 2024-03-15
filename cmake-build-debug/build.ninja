@@ -52,21 +52,21 @@ build cmake_object_order_depends_target_Scotty3D: phony || CMakeFiles/Scotty3D.d
 build CMakeFiles/Scotty3D.dir/tests/a0/test.a0.task2.problems.cpp.obj: CXX_COMPILER__Scotty3D_unscanned_Debug D$:/CMU/2024$ Spring/15662$ Computer$ Graphics/Scotty3D/tests/a0/test.a0.task2.problems.cpp || cmake_object_order_depends_target_Scotty3D
   DEP_FILE = CMakeFiles\Scotty3D.dir\tests\a0\test.a0.task2.problems.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
-  INCLUDES = -ID:/CMU/2024 -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Spring/15662" -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Computer" -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Graphic/Scotty3D/src"
+  INCLUDES = -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Scotty3D" -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/src/test.h"
   OBJECT_DIR = CMakeFiles\Scotty3D.dir
   OBJECT_FILE_DIR = CMakeFiles\Scotty3D.dir\tests\a0
 
 build CMakeFiles/Scotty3D.dir/src/scene/transform.cpp.obj: CXX_COMPILER__Scotty3D_unscanned_Debug D$:/CMU/2024$ Spring/15662$ Computer$ Graphics/Scotty3D/src/scene/transform.cpp || cmake_object_order_depends_target_Scotty3D
   DEP_FILE = CMakeFiles\Scotty3D.dir\src\scene\transform.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
-  INCLUDES = -ID:/CMU/2024 -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Spring/15662" -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Computer" -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Graphic/Scotty3D/src"
+  INCLUDES = -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Scotty3D" -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/src/test.h"
   OBJECT_DIR = CMakeFiles\Scotty3D.dir
   OBJECT_FILE_DIR = CMakeFiles\Scotty3D.dir\src\scene
 
 build CMakeFiles/Scotty3D.dir/tests/a1/test.a1.task1.cpp.obj: CXX_COMPILER__Scotty3D_unscanned_Debug D$:/CMU/2024$ Spring/15662$ Computer$ Graphics/Scotty3D/tests/a1/test.a1.task1.cpp || cmake_object_order_depends_target_Scotty3D
   DEP_FILE = CMakeFiles\Scotty3D.dir\tests\a1\test.a1.task1.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
-  INCLUDES = -ID:/CMU/2024 -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Spring/15662" -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Computer" -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Graphic/Scotty3D/src"
+  INCLUDES = -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/Scotty3D" -I"D:/CMU/2024 Spring/15662 Computer Graphics/Scotty3D/src/test.h"
   OBJECT_DIR = CMakeFiles\Scotty3D.dir
   OBJECT_FILE_DIR = CMakeFiles\Scotty3D.dir\tests\a1
 
