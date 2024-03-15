@@ -26,7 +26,7 @@ void Halfedge_Mesh::triangulate() {
         }
         else {
             // used for while loop expression
-            HalfedgeRef h_origin = f->halfedge;
+//            HalfedgeRef h_origin = f->halfedge;
 
             // initialize the first vertex and halfedge;
             HalfedgeRef h_start = f->halfedge;
@@ -34,7 +34,7 @@ void Halfedge_Mesh::triangulate() {
 
             // initialize the second vertex and halfedge;
             HalfedgeRef h_current = h_start->next;
-            VertexRef v_current = h_current->vertex;
+//            VertexRef v_current = h_current->vertex;
 
             // Get the halfedge that refer to h_origin
             HalfedgeRef h_before_start = h_start->next;
