@@ -26,12 +26,17 @@ std::pair<Ray, float> Camera::sample_ray(RNG &rng, uint32_t px, uint32_t py) {
 	Vec2 sensor_pixel = Vec2(float(px), float(py)) + offset;
 
 	//TODO: Transform from sensor pixels into world position on the sensor plane
-	(void)sensor_pixel;
+    float h = 2 * tan(vertical_fov/2 * ((float)M_PI/180));  // transform from degree to radians
+    float w = aspect_ratio * h;
+
+    Vec2 normalized_pixel = Vec2(sensor_pixel.x/film.width, sensor_pixel.y/film.height);
+    Vec2 world_pixel = Vec2(normalized_pixel.x * w, normalized_pixel.y * h) - Vec2(w/2, h/2);
+//	(void)sensor_pixel;
 
 	//Build ray:
 	Ray ray;
 	ray.point = Vec3(); //ray should start at the origin
-	ray.dir = Vec3(0,0,-1); //TODO: compute from sensor plane position
+	ray.dir = Vec3(world_pixel.x,world_pixel.y,-1.0f) - ray.point; //TODO: compute from sensor plane position
 	ray.depth = film.max_ray_depth; //rays should, by default, go as deep as the max depth parameter allows
 	
    	return {ray, offset_pdf};

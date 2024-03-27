@@ -86,7 +86,38 @@ struct BBox {
 		// [times.x,times.y], update times with the new intersection times.
 		// This means at least one of tmin and tmax must be within the range
 
-		return false;
+        float tmin = (min.x - ray.point.x) / ray.dir.x;
+        float tmax = (max.x - ray.point.x) / ray.dir.x;
+
+        if (tmin > tmax) std::swap(tmin, tmax);
+
+        float tymin = (min.y - ray.point.y) / ray.dir.y;
+        float tymax = (max.y - ray.point.y) / ray.dir.y;
+
+        if (tymin > tymax) std::swap(tymin, tymax);
+
+        if ((tmin > tymax) || (tymin > tmax)) return false;
+
+        if (tymin > tmin) tmin = tymin;
+
+        if (tymax < tmax) tmax = tymax;
+
+        float tzmin = (min.z - ray.point.z) / ray.dir.z;
+        float tzmax = (max.z - ray.point.z) / ray.dir.z;
+
+        if (tzmin > tzmax) std::swap(tzmin, tzmax);
+
+        if ((tmin > tzmax) || (tzmin > tmax)) return false;
+
+        if (tzmin > tmin) tmin = tzmin;
+        if (tzmax < tmax) tmax = tzmax;
+
+        if (tmin > times.y || tmax < times.x) return false;
+
+        times.x = std::max(tmin, times.x);
+        times.y = std::min(tmax, times.y);
+
+        return true;
 	}
 
 	/// Get the eight corner points of the bounding box

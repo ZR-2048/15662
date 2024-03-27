@@ -25,8 +25,14 @@ public:
 	BVH() = default;
 	BVH(std::vector<Primitive>&& primitives, size_t max_leaf_size = 1);
 	void build(std::vector<Primitive>&& primitives, size_t max_leaf_size = 1);
+    // helper function
+    size_t buildHelper(size_t start, size_t end, size_t max_leaf_size = 1);
+    // compute bucket function
+    size_t compute_bucket(float center=0, float bounds_min=0, float bounds_max=0, size_t num_buckets=0);
 
-	BVH(BVH&& src) = default;
+    void find_closest_hit(const Ray& ray, size_t node_idx, Trace& closest) const;
+
+    BVH(BVH&& src) = default;
 	BVH& operator=(BVH&& src) = default;
 
 	BVH(const BVH& src) = delete;

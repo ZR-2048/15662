@@ -11,8 +11,10 @@ Vec2 Rect::sample(RNG &rng) const {
 
     // Return a point selected uniformly at random from the rectangle [0,size.x)x[0,size.y)
     // Useful function: rng.unit()
+    float x = size.x * rng.unit();
+    float y = size.y * rng.unit();
 
-    return Vec2{};
+    return Vec2{x, y};
 }
 
 float Rect::pdf(Vec2 at) const {

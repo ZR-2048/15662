@@ -72,7 +72,8 @@
 			[
 				0,
 				1,
-				2
+				2,
+				3
 			]
 		}
 	],
@@ -111,7 +112,8 @@
 			[
 				0,
 				1,
-				2
+				2,
+				3
 			]
 		}
 	],
@@ -132,7 +134,13 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "tests/a1/test.a1.task1.cpp",
+			"path" : "tests/a3/test.a3.task2.triangle.hit.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "tests/a3/test.a3.task3.bvh.build.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

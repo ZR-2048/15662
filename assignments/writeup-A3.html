@@ -1,6 +1,6 @@
 **Assignment 3 Report**
 
-AndrewID: XXXX
+AndrewID: zhengren
 
 (##) About this template
 
@@ -12,21 +12,33 @@ AndrewID: XXXX
 
 (##) A3T1 CHECKPOINT
 
-You do not need any screenshots for this task. 
+You do not need any screenshots for this task.
+
+This task is pretty simple and spend within several hours finishing that.
 
 Your completion will be graded based on the reference `test.a3.task1.cpp` file and 
 checking that camera rays properly fill up the camera view frustrum.
 
 (##) A3T2 CHECKPOINT
 
-You do not need any screenshots for this task. 
+You do not need any screenshots for this task.
+
+This task is easier than BVH because what we need to do is just implement the intersection algorithm based on the slides provided and handled some edge cases.
+Spend about half a day to finish the task.
 
 Your completion will be graded based on the reference `test.a3.task2.*.cpp` files and 
 checking that rendering spheres and triangles works properly.
 
 (##) A3T3 CHECKPOINT
 
-You do not need any screenshots for this task. 
+You do not need any screenshots for this task.
+
+This task is the most difficult and time-consuming part. The first problem is to understand data structures, parameters that are passed in and returned.
+The second problem is to fully understand what BVH mean, in class we only introduce conceptions but not implement details, I spend a lot of time understanding what to return,
+what function to use, and most importantly, how to compute the best partition using compute_buckets method.
+The ray intersection is also hard because at first I don't understand the whole process, what's the difference between bbox().hit and primitives.hit()? One returns a bool value
+and the other returns a trace data. Why "front-to-back" method is faster? As I dive deeper, I get a better understanding.
+Task 3 takes me almost have a week, yet still have no confidence that I implement all of them right.
 
 Your completion will be graded based on the reference `test.a3.task3.*.cpp` files and 
 checking that the generated BVH looks reasonable and rendering large meshes is fast and correct.

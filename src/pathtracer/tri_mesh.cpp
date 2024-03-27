@@ -14,15 +14,37 @@ BBox Triangle::bbox() const {
 
     // Beware of flat/zero-volume boxes! You may need to
     // account for that here, or later on in BBox::hit.
+//    printf("\nindex for 3 points %d %d %d", v0, v1, v2);
+    Vec3 p0 = vertex_list[v0].position;
+    Vec3 p1 = vertex_list[v1].position;
+    Vec3 p2 = vertex_list[v2].position;
+
+    Vec3 p_min(std::min({p0.x, p1.x, p2.x}),
+             std::min({p0.y, p1.y, p2.y}),
+             std::min({p0.z, p1.z, p2.z}));
+
+    Vec3 p_max(std::max({p0.x, p1.x, p2.x}),
+             std::max({p0.y, p1.y, p2.y}),
+             std::max({p0.z, p1.z, p2.z}));
+
+    // deal with flat/zero-volume boxes
+    for (int i = 0; i < 3; ++i) {
+        if (p_min[i] == p_max[i]) {
+            p_max[i] += 0.00000001f;
+        }
+    }
 
     BBox box;
+    box.min = p_min;
+    box.max = p_max;
     return box;
 }
 
 Trace Triangle::hit(const Ray& ray) const {
 	//A3T2
-	
-	// Each vertex contains a postion and surface normal
+    Trace ret;
+
+    // Each vertex contains a postion and surface normal
     Tri_Mesh_Vert v_0 = vertex_list[v0];
     Tri_Mesh_Vert v_1 = vertex_list[v1];
     Tri_Mesh_Vert v_2 = vertex_list[v2];
@@ -32,16 +54,54 @@ Trace Triangle::hit(const Ray& ray) const {
 
     // TODO (PathTracer): Task 2
     // Intersect the ray with the triangle defined by the three vertices.
+    Vec3 o = ray.point;
+    Vec3 d = ray.dir;
+    // define vectors
+    Vec3 s = o-v_0.position;
+    Vec3 e1 = v_1.position - v_0.position;
+    Vec3 e2 = v_2.position - v_0.position;
 
-    Trace ret;
-    ret.origin = ray.point;
-    ret.hit = false;       // was there an intersection?
-    ret.distance = 0.0f;   // at what distance did the intersection occur?
-    ret.position = Vec3{}; // where was the intersection?
-    ret.normal = Vec3{};   // what was the surface normal at the intersection?
-                           // (this should be interpolated between the three vertex normals)
-	ret.uv = Vec2{};	   // What was the uv associated with the point of intersection?
-						   // (this should be interpolated between the three vertex uvs)
+    float denominator = dot(cross(e1, d), e2);
+    if (std::abs(denominator) < std::numeric_limits<float>::epsilon()) {
+        // parallel, no intersection
+        ret.hit = false;
+        ret.distance = 0.0f;
+        ret.position = Vec3{};
+        ret.normal = Vec3{};
+        ret.uv = Vec2{};
+    }
+    else{
+        Vec3 matrix = Vec3(-dot(cross(s, e2), d), dot(cross(e1, d), s), -dot(cross(s, e2), e1));
+        Vec3 uvt = 1.0f/denominator * matrix;
+        float u = uvt.x;
+        float v = uvt.y;
+        float w = 1-u-v;
+        float t = uvt.z;
+
+        if (u >= 0 && v >= 0 && 1-u-v >= 0 && t >= ray.dist_bounds.x && t <= ray.dist_bounds.y){
+            ret.hit = true;
+            ret.distance = t;
+            ret.position = ray.at(t);
+            ret.normal = w * v_0.normal + u * v_1.normal + v * v_2.normal;
+            ret.uv = w * v_0.uv + u * v_1.uv + v * v_2.uv;
+        }
+        else{
+            ret.hit = false;
+            ret.distance = 0.0f;
+            ret.position = Vec3{};
+            ret.normal = Vec3{};
+            ret.uv = Vec2{};
+        }
+
+        ret.origin = ray.point;
+    }
+//    ret.hit = false;       // was there an intersection?
+//    ret.distance = 0.0f;   // at what distance did the intersection occur?
+//    ret.position = Vec3{}; // where was the intersection?
+//    ret.normal = Vec3{};   // what was the surface normal at the intersection?
+//                           // (this should be interpolated between the three vertex normals)
+//	ret.uv = Vec2{};	   // What was the uv associated with the point of intersection?
+//						    (this should be interpolated between the three vertex uvs)
     return ret;
 }
 

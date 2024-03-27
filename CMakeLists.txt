@@ -7,4 +7,5 @@ include_directories(Scotty3D src/test.h)
 
 add_executable(Scotty3D tests/a0/test.a0.task2.problems.cpp
         src/scene/transform.cpp
-        tests/a1/test.a1.task1.cpp)
+        tests/a3/test.a3.task2.triangle.hit.cpp
+        tests/a3/test.a3.task3.bvh.build.cpp)
