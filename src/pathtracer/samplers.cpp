@@ -110,8 +110,20 @@ Vec3 Sphere::Uniform::sample(RNG &rng) const {
 
     // Generate a uniformly random point on the unit sphere.
     // Tip: start with Hemisphere::Uniform
+    float Xi1 = rng.unit();
+    float Xi2 = rng.unit();
 
-    return Vec3{};
+    float theta = std::acos(Xi1);
+    float phi = 2.0f * PI_F * Xi2;
+
+    float xs = std::sin(theta) * std::cos(phi);
+    float ys = std::cos(theta);
+    float zs = std::sin(theta) * std::sin(phi);
+
+    if (rng.coin_flip(0.5)) ys *= -1;
+
+    return Vec3{xs, ys, zs};
+    return Vec3();
 }
 
 float Sphere::Uniform::pdf(Vec3 dir) const {
@@ -127,18 +139,63 @@ Sphere::Image::Image(const HDR_Image& image) {
     const auto [_w, _h] = image.dimension();
     w = _w;
     h = _h;
+
+    _pdf.resize(w*h);
+    _cdf.resize(w*h);
+    float total_flux = 0.f;
+    for (uint32_t y=0; y<h; y++){
+        float theta = PI_F * (h-1-y) / (h-1);  // map to [0, pi]
+        float sin_theta = sin(theta);
+
+        for (uint32_t x=0; x<w; x++){
+            Spectrum HDR_s = image.at(x, y);
+            float flux = HDR_s.luma();
+
+            uint32_t idx = y*w+x;
+            _pdf[idx]  = flux * sin_theta;
+            total_flux += _pdf[idx];
+        }
+    }
+
+    float cdf = 0.f;
+    for (uint32_t i=0; i<w*h; i++){
+        _pdf[i] /= total_flux;
+        cdf += _pdf[i];
+        _cdf[i] = cdf;
+    }
 }
 
 Vec3 Sphere::Image::sample(RNG &rng) const {
 	if(!IMPORTANCE_SAMPLING) {
 		// Step 1: Uniform sampling
 		// Declare a uniform sampler and return its sample
-    	return Vec3{};
+        Samplers::Sphere::Uniform uniform_sampler;
+        Vec3 uniform_point = uniform_sampler.sample(rng);
+
+    	return uniform_point;
 	} else {
 		// Step 2: Importance sampling
 		// Use your importance sampling data structure to generate a sample direction.
 		// Tip: std::upper_bound
-    	return Vec3{};
+        Samplers::Sphere::Image importance_sampler;
+        float random_value = rng.unit();
+        auto it = std::upper_bound(_cdf.begin(), _cdf.end(), random_value);
+        auto idx = std::distance(_cdf.begin(), it);
+
+        auto x = idx % w;
+        auto y = idx / h;
+
+        float u = x / (float)w;
+        float v = y / (float)h;
+        float theta = (1-v) * PI_F;  // [0, 1] map to [0, π]
+        float phi = u * 2 * PI_F;  // [0, 1] map to [0, 2π]
+
+        Vec3 direction;
+        direction.x = sin(theta) * cos(phi);
+        direction.z = sin(theta) * sin(phi);
+        direction.y = cos(theta);
+
+    	return direction;
 	}
 }
 
@@ -146,11 +203,26 @@ float Sphere::Image::pdf(Vec3 dir) const {
     if(!IMPORTANCE_SAMPLING) {
 		// Step 1: Uniform sampling
 		// Declare a uniform sampler and return its pdf
-    	return 0.f;
+        Samplers::Sphere::Uniform uniform;
+        float uniform_pdf = uniform.pdf(dir);
+
+    	return uniform_pdf;
 	} else {
 		// A3T7 - image sampler importance sampling pdf
 		// What is the PDF of this distribution at a particular direction?
-    	return 0.f;
+        float theta, phin;
+        theta = acos(dir.z);
+        phin = atan2(dir.y, dir.z);
+        if (phin < 0.0f) phin += 2*PI_F;
+
+        float u = phin / (2 * PI_F) * w;
+        float v = (1.0f - theta / PI_F) * h;
+
+        int x = static_cast<int>(u) % w;
+        int y = static_cast<int>(v) % h;
+        int idx = y * w + x;
+
+    	return (_cdf[idx])/(2*PI_F*PI_F*sin(theta));
 	}
 }
 

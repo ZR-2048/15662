@@ -45,7 +45,10 @@ checking that the generated BVH looks reasonable and rendering large meshes is f
 
 (##) A3T4 FINAL
 
-You do not need any screenshots for this task. 
+You do not need any screenshots for this task.
+
+About half a day is spent on task 4. Lambertian is quite easy to understand. The hardest part for this task is to understand the procedure of sampling light and understand what function is usefule.
+First get scatter result, then create a new ray and trace that ray, finally modify radiance.
 
 Your completion will be graded based on the reference `test.a3.task4.*.cpp` files and 
 checking that rendering lambertian materials look correct.
@@ -54,19 +57,34 @@ checking that rendering lambertian materials look correct.
 
 You do not need any screenshots for this task. 
 
+Several days are spent doing this task but still can't finish.
+I can implement mirror correctly, but my refract function seems not correct for some unkown reason, leading to an incorrect glass scatter.
+There're several situations for refract: IOR=1, light doesn't change direction; IOT!=1, TIR and normal refraction.
+However, when IOR = 1, TIR = false, refract returns -out_dir, and attenuaiton = transmittance. However, There is shadow and a hemi-transparent sphere if transmittance is not set to white.
+Otherwise, the image always looks black.
+
 Your completion will be graded based on the reference `test.a3.task5.*.cpp` files and 
 checking that rendering mirror, refract and glass materials look correct.
 
 (##) A3T6 FINAL
 
-You do not need any screenshots for this task. 
+You do not need any screenshots for this task.
+
+1 day is spent on this task once you understand how direct_lighting works, which is the most difficult part. You need to understand what the weight is, how two
+brdf is averaged and how to trace that ray.
 
 Your completion will be graded based on the reference `test.a3.task6.*.cpp` files and 
 checking that there is an improvement between using task 4 direct lighting and using task 6 direct lighting.
 
 (##) A3T7 FINAL
 
-You do not need any screenshots for this task. 
+You do not need any screenshots for this task.
+
+1 day is spent on this task too. And hald a day is spent on understanding the algorithm. Uniform sample is quite simple, but the other one is not.
+To finish this task, I have a better understanding about what pdf is and how to convert coordinates. The key idea about pdf is to calculate pdf in texture space seperately,
+and thus use pdf to get cdf.
+The key mapping relationship is to map texture coordinate(u, v), sphere coordinate(theta, phin) and 3D coordinate in Scotty3D(x, y, z). Inversely, once get (x,y,z),
+convert the coordinate to (u, v) and get the corresponding pdf.
 
 Your completion will be graded based on the reference `test.a1.task7.*.cpp` file and 
 checking that rendering scenes with environment lighting yields correct sampling.
@@ -75,7 +93,7 @@ checking that rendering scenes with environment lighting yields correct sampling
 
 Your image:
 <div class="twentytwenty-container">
-    <img src="A3-writeup/reference/render-image.png" alt="Your creation">
+    <img src="A3-writeup/reference/render.png" alt="Your creation">
 </div>
 Explanation of what it is and how you made it:
 

@@ -10,8 +10,10 @@ Vec3 reflect(Vec3 dir) {
     // Return direction to incoming light that would be
 	// reflected out in direction dir from surface
 	// with normal (0,1,0)
+    Vec3 n = Vec3(0, 1, 0);
+    Vec3 wr = -dir + 2 * dot(dir, n) * n;
 
-    return Vec3{};
+    return wr;
 }
 
 Vec3 refract(Vec3 out_dir, float index_of_refraction, bool& was_internal) {
@@ -24,6 +26,45 @@ Vec3 refract(Vec3 out_dir, float index_of_refraction, bool& was_internal) {
 
 	// The surface normal is (0,1,0)
 
+    // IOR = 1, light go through
+    if (index_of_refraction == 1.0f){
+        was_internal = false;
+        return -out_dir;
+    }
+    printf("outside IOR=1");
+    // IOR != 1
+    // t is the incoming light, i is the outgoing light
+    Vec3 normal = Vec3(0, 1, 0);
+    Vec3 wt = out_dir;
+    float cos_t = dot(wt, normal);  // out_dir.y
+    float sin_t_square = 1.0f - cos_t * cos_t;
+    bool entering = cos_t >0;
+    float ni, nt;
+
+    // TODO: check
+    if (entering){
+        nt = 1.f;
+        ni = index_of_refraction;
+    } else {
+        nt = index_of_refraction;
+        ni = 1.f;
+    }
+    float TIR = 1.f - (nt/ni)*(nt/ni) * sin_t_square;
+
+    if (TIR < 0){
+        was_internal = true;
+        return Vec3 {};
+    }
+    else{
+        was_internal = false;
+        float cos_i = sqrt(TIR);
+        Vec3 wi;
+        wi = (nt/ni) * (-out_dir) + ((nt/ni)*cos_t-cos_i)*normal;
+
+        return wi;
+    }
+
+
 	return Vec3{};
 }
 
@@ -31,8 +72,10 @@ float schlick(Vec3 in_dir, float index_of_refraction) {
 	//A3T5 Materials - Schlick's approximation helper
 
 	// Implement Schlick's approximation of the Fresnel reflection factor.
+    float R0 = (float)pow((1.f-index_of_refraction)/(1.f+index_of_refraction), 2.f);
+    float cos_theta = in_dir.y;
 
-	return 0.0f;
+	return R0 + (1.f-R0) * (float)pow((1.f-cos_theta),5.f);
 }
 
 Spectrum Lambertian::evaluate(Vec3 out, Vec3 in, Vec2 uv) const {
@@ -42,7 +85,10 @@ Spectrum Lambertian::evaluate(Vec3 out, Vec3 in, Vec2 uv) const {
     // is reflected through out_dir: (albedo / PI_F) * cos(theta).
     // Note that for Scotty3D, y is the 'up' direction.
 
-    return Spectrum{};
+    float cos_theta = in.y;
+    Spectrum out_in_ratio = (albedo.lock()->evaluate(uv) / PI_F) * cos_theta;
+
+    return out_in_ratio;
 }
 
 Scatter Lambertian::scatter(RNG &rng, Vec3 out, Vec2 uv) const {
@@ -53,10 +99,10 @@ Scatter Lambertian::scatter(RNG &rng, Vec3 out, Vec2 uv) const {
 
 	Scatter ret;
 	//TODO: sample the direction the light was scatter from from a cosine-weighted hemisphere distribution:
-	ret.direction = Vec3{};
+	ret.direction = sampler.sample(rng);
 
 	//TODO: compute the attenuation of the light using Lambertian::evaluate():
-	ret.attenuation = Spectrum{};
+	ret.attenuation = evaluate(out, ret.direction, uv);
 
 	return ret;
 }
@@ -66,7 +112,12 @@ float Lambertian::pdf(Vec3 out, Vec3 in) const {
     // Compute the PDF for sampling in_dir from the cosine-weighted hemisphere distribution.
 	[[maybe_unused]] Samplers::Hemisphere::Cosine sampler; //this might be handy!
 
-    return 0.0f;
+    float cos_theta = in.y;
+    if (cos_theta <= 0){
+        return 0.0f;
+    }
+
+    return cos_theta / PI_F;
 }
 
 Spectrum Lambertian::emission(Vec2 uv) const {
@@ -93,8 +144,8 @@ Scatter Mirror::scatter(RNG &rng, Vec3 out, Vec2 uv) const {
 	// Similar to albedo, reflectance represents the ratio of incoming light to reflected light
 
     Scatter ret;
-    ret.direction = Vec3();
-    ret.attenuation = Spectrum{};
+    ret.direction = reflect(out);
+    ret.attenuation = reflectance.lock()->evaluate(uv);
     return ret;
 }
 
@@ -128,8 +179,19 @@ Scatter Refract::scatter(RNG &rng, Vec3 out, Vec2 uv) const {
 	//  You do not need to scale by the Fresnel Coefficient - you'll only need to account for the correct ratio of indices of refraction
 
     Scatter ret;
-    ret.direction = Vec3();
-    ret.attenuation = Spectrum{};
+    bool was_internal;
+    ret.direction = refract(out, ior, was_internal);
+
+    if (was_internal){
+        ret.attenuation = Spectrum(1.f);  // Divya's advise
+    }
+    // TODO: attenuation???
+    else{
+        bool entering = dot(out, Vec3(0,1,0));
+        float scalar = entering ? 1.f/ior : ior;
+        ret.attenuation = transmittance.lock()->evaluate(uv) * scalar * scalar;
+    }
+//    ret.attenuation = evaluate(out, ret.direction, uv);
     return ret;
 }
 
@@ -178,9 +240,32 @@ Scatter Glass::scatter(RNG &rng, Vec3 out, Vec2 uv) const {
 	// For attenuation, be sure to take a look at the Specular Transimission section of the PBRT textbook for a derivation
 	//  You do not need to scale by the Fresnel Coefficient - you'll only need to account for the correct ratio of indices of refraction
 
+    Vec3 normal = Vec3(0, 1, 0);
+
     Scatter ret;
-    ret.direction = Vec3();
-    ret.attenuation = Spectrum{};
+    float fresnel = schlick(out, ior);
+    bool is_reflect = rng.coin_flip(fresnel);
+
+    bool was_internal;
+    if (is_reflect){
+        ret.direction = reflect(out);
+        ret.attenuation = reflectance.lock()->evaluate(uv);
+    }
+    else{
+        ret.direction = refract(out, ior, was_internal);
+        if (was_internal){
+            ret.direction = reflect(out);
+            ret.attenuation = reflectance.lock()->evaluate(uv);
+        }
+        else{
+            bool entering = dot(out, Vec3(0,1,0));
+            float scalar = entering ? 1.f/ior : ior;
+            ret.attenuation = transmittance.lock()->evaluate(uv) * scalar * scalar;
+        }
+    }
+
+//    ret.direction = Vec3();
+//    ret.attenuation = Spectrum{};
     return ret;
 }
 

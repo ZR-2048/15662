@@ -174,9 +174,9 @@ void BVH<Primitive>::find_closest_hit(const Ray& ray, size_t node_idx, Trace& cl
         return;
     }
 
-    if (hit_times.x > closest.distance) {
-        return;
-    }
+//    if (hit_times.x > closest.distance) {
+//        return;
+//    }
 
     if (node.is_leaf()) {
         for (size_t i = node.start; i < node.start + node.size; ++i) {
@@ -191,29 +191,29 @@ void BVH<Primitive>::find_closest_hit(const Ray& ray, size_t node_idx, Trace& cl
 //        find_closest_hit(ray, node.r, closest);
 
         // front-to-back
-        Vec2 hit_times_child1 = Vec2(0.f, std::numeric_limits<float>::infinity()), hit_times_child2 = Vec2(0.f, std::numeric_limits<float>::infinity());
+        Vec2 hit_times_child1 = ray.dist_bounds;
+        Vec2 hit_times_child2 = ray.dist_bounds;
         bool hit_child1 = nodes[node.l].bbox.hit(ray, hit_times_child1);
         bool hit_child2 = nodes[node.r].bbox.hit(ray, hit_times_child2);
 
         size_t first_child_idx, second_child_idx;
-        if (hit_child1 && (!hit_child2 || hit_times_child1.x < hit_times_child2.x)) {
-            first_child_idx = node.l;
-            second_child_idx = node.r;
-        } else if (hit_child2) {
-            first_child_idx = node.r;
-            second_child_idx = node.l;
-        } else {
-            return;
-        }
-
-        find_closest_hit(ray, first_child_idx, closest);
-
-        if ((hit_child1 && hit_times_child1.y < closest.distance) ||
-            (hit_child2 && hit_times_child2.y < closest.distance)) {
+        first_child_idx = node.l;
+        second_child_idx = node.r;
+//        if (hit_child1 && (!hit_child2 || hit_times_child1.x < hit_times_child2.x)) {
+        if (hit_child1 && hit_child2) {
+            find_closest_hit(ray, first_child_idx, closest);
             find_closest_hit(ray, second_child_idx, closest);
+        } else if (hit_child2) {
+            find_closest_hit(ray, second_child_idx, closest);
+        } else if (hit_child1){
+            find_closest_hit(ray, first_child_idx, closest);
+        }
+        else {
+            return;
         }
     }
 }
+
 
 template<typename Primitive>
 BVH<Primitive>::BVH(std::vector<Primitive>&& prims, size_t max_leaf_size) {

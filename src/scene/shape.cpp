@@ -32,46 +32,33 @@ PT::Trace Sphere::hit(Ray ray) const {
     PT::Trace ret;
     ret.origin = ray.point;
 
-    Vec3 o = ray.point;
-    Vec3 d = ray.dir;
+    Vec3 rel_pos = ray.point;
+    float b = 2.0f * dot(rel_pos, ray.dir);
+    float c = rel_pos.norm_squared() - radius * radius;
+    float d = b * b - 4 * c;
 
-    float a = dot(d, d);
-    float b = 2 * dot(o, d);
-    float c = dot(o, o) - radius*radius;
-    float delta = b*b-4*a*c;
+    if (d < 0.0f) return ret;
 
-    if (delta < 0){
-        ret.hit = false;
-    }
-    else{
-        // calculate 2 roots
-        float t1 = (-1*b-sqrt(delta))/2*a;
-        float t2 = (-1*b+sqrt(delta))/2*a;
+    float sqd = std::sqrt(d);
 
-        if (t1 > 0 && t2 > 0 && t1 >= ray.dist_bounds.x && t1 <= ray.dist_bounds.y && t2 >= ray.dist_bounds.x && t2 <= ray.dist_bounds.y){
-            ret.hit = true;
-            ret.distance = t1;
-            ret.position = ray.at(t1);
-            ret.normal = ret.position.unit();
-            ret.uv = Sphere::uv(o+t1*d);
-        }
-        else if(t1 < 0 && t2 > 0 && t2 >= ray.dist_bounds.x && t2 <= ray.dist_bounds.y){
-            ret.hit = true;
-            ret.distance = t2;
-            ret.position = ray.at(t2);
-            ret.normal = ret.position.unit();
-            ret.uv = Sphere::uv(o+t2*d);
-        }
-        else{
-            ret.hit = false;
-        }
+    float dist = (-b - sqd) / 2.0f;
+    if (dist <= ray.dist_bounds.y && dist >= ray.dist_bounds.x) {
+        ret.hit = true;
+        ret.position = ray.at(dist);
+        ret.distance = dist;
+        ret.normal = ret.position / radius;
+        ret.uv = uv(ret.normal);
+        return ret;
     }
 
-//    ret.hit = false;       // was there an intersection?
-//    ret.distance = 0.0f;   // at what distance did the intersection occur?
-//    ret.position = Vec3{}; // where was the intersection?
-//    ret.normal = Vec3{};   // what was the surface normal at the intersection?
-//	ret.uv = Vec2{}; 	   // what was the uv coordinates at the intersection? (you may find Sphere::uv to be useful)
+    dist = (-b + sqd) / 2.0f;
+    if (dist <= ray.dist_bounds.y && dist >= ray.dist_bounds.x) {
+        ret.hit = true;
+        ret.position = ray.at(dist);
+        ret.distance = dist;
+        ret.normal = ret.position / radius;
+        ret.uv = uv(ret.normal);
+    }
     return ret;
 }
 
