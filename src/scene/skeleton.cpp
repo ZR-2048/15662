@@ -48,7 +48,15 @@ std::vector< Mat4 > Skeleton::bind_pose() const {
 	for (auto const &bone : bones) {
 		(void)bone; //avoid complaints about unused bone
 		//placeholder -- your code should actually compute the correct transform:
-		bind.emplace_back(Mat4::I);
+        if (bone.parent == -1U) { // no parent
+            bind.emplace_back(Mat4::translate(base+base_offset));
+        } else {
+            const Mat4 parent_transform = bind[bone.parent];
+            const Vec3 parent_extent = bones[bone.parent].extent;
+            const Mat4 translation = Mat4::translate(parent_extent);
+            bind.emplace_back(parent_transform * translation);
+        }
+//		bind.emplace_back(Mat4::I);
 	}
 
 	assert(bind.size() == bones.size()); //should have a transform for every bone.
@@ -66,9 +74,34 @@ std::vector< Mat4 > Skeleton::current_pose() const {
 	//Useful functions:
 	//Bone::compute_rotation_axes() will tell you what axes (in local bone space) Bone::pose should rotate around.
 	//Mat4::angle_axis(angle, axis) will produce a matrix that rotates angle (in degrees) around a given axis.
+    std::vector< Mat4 > pose;
+    pose.reserve(bones.size());
 
-	return std::vector< Mat4 >(bones.size(), Mat4::I);
+    Vec3 Tr = base + base_offset;
 
+    for (auto const &bone : bones) {
+        Mat4 transform = Mat4::I;
+
+        Vec3 x, y, z;
+        bone.compute_rotation_axes(&x, &y, &z);
+
+        Mat4 rotation = Mat4::angle_axis(bone.pose.x, x) *
+                        Mat4::angle_axis(bone.pose.y, y) *
+                        Mat4::angle_axis(bone.pose.z, z);
+
+        if (bone.parent == -1U) {
+            transform = Mat4::translate(Tr) * rotation;
+        } else {
+            const Mat4 parent_transform = pose[bone.parent];
+            const Vec3 parent_extent = bones[bone.parent].extent;
+            const Mat4 translation = Mat4::translate(parent_extent);
+            transform = parent_transform * translation * rotation;
+        }
+        pose.emplace_back(transform);
+    }
+
+    assert(pose.size() == bones.size());
+    return pose;
 }
 
 std::vector< Vec3 > Skeleton::gradient_in_current_pose() const {
@@ -81,8 +114,39 @@ std::vector< Vec3 > Skeleton::gradient_in_current_pose() const {
 
 	//TODO: loop over handles and over bones in the chain leading to the handle, accumulating gradient contributions.
 	//remember bone.compute_rotation_axes() -- should be useful here, too!
+    std::vector< Mat4 > current_transforms = current_pose();
+//    for (const auto &handle : handles) {
+//        Vec3 target = handle.target; // IK handle的目标位置
+//        // 只考虑激活的handle：
+//        if (!handle.enabled) continue;
+//
+//        // 递归计算梯度：
+//        BoneIndex bone_idx = handle.bone;
+//        while (bone_idx != -1U) {
+//            // 获取骨骼的局部旋转轴：
+//            Vec3 x_axis, y_axis, z_axis;
+//            bones[bone_idx].compute_rotation_axes(&x_axis, &y_axis, &z_axis);
+//
+//            // 获取骨骼的局部末端位置和全局末端位置：
+//            Vec3 local_tip_position = bones[bone_idx].extent;
+//            Vec3 global_tip_position = transform_point(current_transforms[bone_idx], local_tip_position);
+//
+//            Vec3 r = current_transforms[bone_idx].col(3).xyz(); // 骨骼的世界坐标系下的位置
+//            Vec3 diff = global_tip_position - target;
+//
+//            // 对每个旋转轴计算偏导数，并累加到梯度：
+//            gradient[bone_idx] += Vec3{
+//                    dot(diff, cross(x_axis, global_tip_position - r)),
+//                    dot(diff, cross(y_axis, global_tip_position - r)),
+//                    dot(diff, cross(z_axis, global_tip_position - r))
+//            };
+//
+//            // 移动到下一个父骨骼：
+//            bone_idx = bones[bone_idx].parent;
+//        }
+//    }
 
-	assert(gradient.size() == bones.size());
+    assert(gradient.size() == bones.size());
 	return gradient;
 }
 

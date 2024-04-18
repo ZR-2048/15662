@@ -23,11 +23,13 @@ Test test_a4_task1_spline_at_simple("a4.task1.spline.at.simple", []() {
 	Vec3 expected = Vec3(1.5f, 0.0f, 0.0f);
 	actual = test_spline.at(1.5f);
 	if (Test::differs(actual, expected)) {
+        printf("wrong in (1.5,0,0)\n");
 		throw Test::error("Incorrect return value between the time of two knots!");
 	}
 	expected = Vec3(2.5f, 0.0f, 0.0f);
 	actual = test_spline.at(2.5f);
 	if (Test::differs(actual, expected)) {
+        printf("wrong in (2.5,0,0)\n");
 		throw Test::error("Incorrect return value between the time of two knots!");
 	}
 });
