@@ -6,19 +6,50 @@ bool Particles::Particle::update(const PT::Aggregate &scene, Vec3 const &gravity
 	//A4T4: particle update
 
 	// Compute the trajectory of this particle for the next dt seconds.
+    float time_remaining = dt;
+    while (time_remaining > 0) {
+        // (1) Build a ray representing the particle's path as if it travelled at constant velocity.
+        Ray particle_ray = Ray(position, velocity.unit());
 
-	// (1) Build a ray representing the particle's path as if it travelled at constant velocity.
+        auto collision = scene.hit(particle_ray);
 
-	// (2) Intersect the ray with the scene and account for collisions. Be careful when placing
-	// collision points using the particle radius. Move the particle to its next position.
+        // (2) Intersect the ray with the scene and account for collisions. Be careful when placing
+        // collision points using the particle radius. Move the particle to its next position.
+        if (collision.hit){
+            float collision_time = (collision.distance-radius) / velocity.norm();
 
-	// (3) Account for acceleration due to gravity after updating position.
+            if (collision_time > 0.f && collision_time <= time_remaining){  // time within valid range
+                // TODO: how to move to *next* position?
+                position = scene.hit(particle_ray).position - velocity.unit()*radius;
+//                position = hit_position;
+//                position += velocity * collision_time;
+//                position -= velocity.unit()*radius;
 
-	// (4) Repeat until the entire time step has been consumed.
+                Vec3 normal = collision.normal;  // make sure normal is positive?
+                Vec3 reflected_velocity = velocity - 2*dot(velocity, normal)*normal;
+                velocity = reflected_velocity;
 
-	// (5) Decrease the particle's age and return 'false' if it should be removed.
+//                position = hit_position + reflected_velocity.unit()*radius;
 
-	return false;
+                time_remaining -= collision_time;
+            } else{
+                position += velocity * time_remaining;
+            }
+        } else {
+            position += velocity * time_remaining;
+        }
+
+        // (3) Account for acceleration due to gravity after updating position.
+        velocity += gravity * time_remaining;
+        // (4) Repeat until the entire time step has been consumed.
+        time_remaining -= time_remaining;
+    }
+        // (5) Decrease the particle's age and return 'false' if it should be removed.
+        age -= dt;
+        if (age <= 0.f){
+            return false;
+        }
+    return true;  // particle alive
 }
 
 void Particles::advance(const PT::Aggregate& scene, const Mat4& to_world, float dt) {

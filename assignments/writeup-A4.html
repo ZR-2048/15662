@@ -34,6 +34,11 @@ checking that moving the bones works correctly and IK is functional.
 
 You do not need any screenshots for this task. 
 
+This task is the most difficult one. We need to convert algorithm taught in the slide to a detailed implementation in Scotty3D.
+The hardest part lies that you need to understand the parameters that correspond to the algorithm, how to access them, how to call the function and so on.
+Plus, some time are spent on understanding the conception like bind_pose, current_pose and the relationship between bone and skin. Since there's no recitation for A4,
+this part is hard to get start but as long as I have an intuition, things go better.
+
 Your completion will be graded based on the reference `test.a4.task3.*.cpp` files and 
 checking that the skeleton moves correctly when the bones are moved.
 
@@ -42,6 +47,11 @@ checking that the skeleton moves correctly when the bones are moved.
 Do you want to use the reference A3T2 solutions for this task: ____ (yes/no)
 
 You do not need any screenshots for this task. 
+
+There seems to be some error with collision part where all other movements are correct except for the collision position. The particles will
+go slightly through the surface and then bounce back. I've tried to use different method to update the
+collision poinit including move the patricles "before" its collision or "after" its collision, and have already minus the radius when calculating
+collision time. Sorry that can't figure out this problem.
 
 Your completion will be graded based on the reference `test.a4.task4.*.cpp` files and 
 checking that particle simulation behaves correctly and does not go through any surface.
@@ -53,6 +63,7 @@ Your animation:
     <img src="A4-writeup/reference/animation.mov" alt="Your creation">
 </div>
 Explanation of what it is and how you made it:
+Sorry QAQ, seems due to failing to implement inverse kinematics, Scotty3D crashes when I try to render my animation. So animation can be provided.
 
 Any free model sources you need to credit?
 
